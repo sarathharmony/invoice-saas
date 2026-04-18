@@ -1,0 +1,67 @@
+{
+  "name": "invoice-saas",
+  "description": "Minimal NestJS + Next.js invoice app used as an end-to-end Distribute-as-SaaS test harness on the ACE platform.",
+  "services": [
+    {
+      "name": "backend",
+      "cwd": "packages/backend",
+      "dev": "pnpm install --prefer-offline && pnpm start:dev",
+      "port": 3000,
+      "healthCheck": "/api/health",
+      "runtime": "cloudrun",
+      "containerPort": 3000,
+      "maxInstances": 1,
+      "minInstances": 0,
+      "dockerfile": "packages/backend/Dockerfile"
+    },
+    {
+      "name": "frontend",
+      "cwd": "packages/frontend",
+      "dev": "pnpm install --prefer-offline && pnpm dev",
+      "port": 3001,
+      "runtime": "cloudrun",
+      "containerPort": 3001,
+      "maxInstances": 1,
+      "minInstances": 0,
+      "dockerfile": "packages/frontend/Dockerfile"
+    }
+  ],
+  "saas": {
+    "minInstanceType": "e2-medium",
+    "requiresCloudSql": true,
+    "requiresRedis": false,
+    "trialDays": 30
+  },
+  "envVars": [
+    {
+      "name": "DATABASE_URL",
+      "label": "Postgres connection string",
+      "description": "Full postgres:// URL the backend connects to. For Distribute-as-SaaS ACE provisions Cloud SQL and sets this at boot.",
+      "required": true,
+      "secret": true,
+      "injected": true
+    },
+    {
+      "name": "STRIPE_SECRET_KEY",
+      "label": "Stripe secret key",
+      "description": "Used to accept payment on generated invoice links.",
+      "howToGetItMd": "Sign in to the Stripe dashboard, go to Developers -> API keys, and copy the secret key (starts with `sk_live_` or `sk_test_`).",
+      "required": true,
+      "secret": true
+    },
+    {
+      "name": "COMPANY_NAME",
+      "label": "Company name printed on invoices",
+      "description": "Displayed on every invoice PDF and the invoice web view.",
+      "required": true,
+      "secret": false
+    },
+    {
+      "name": "COMPANY_ADDRESS",
+      "label": "Company address",
+      "description": "Multi-line address. Shown on invoice header.",
+      "required": false,
+      "secret": false
+    }
+  ]
+}
